@@ -1,5 +1,18 @@
 #include "head.h"
 
+void analyze_type(sLoginInfo *send, int newfd)
+{
+	int count;
+	for(count = 0; count < p[count].type_flag != 0;count++)
+	{
+		if(send->type == p[count].type_flag)
+		{
+			p[count].fun(send, newfd);
+			break;
+		}
+	}
+}
+
 void *pthread_func(void *arg)
 {
 	int newfd = *((int *)arg);
