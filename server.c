@@ -144,7 +144,7 @@ void register_user(sLoginInfo *send, int newfd)
 	}
 	if(user_login_flag == REGIST_EXITED)
 	{
-		back_type = REGIST_EXITED; //type 1
+		back_type = REGIST_EXITED; //type 11
 		write(newfd, &back_type,sizeof(int));
 	}else{
 		sprintf(all_buf, "%s:%s",send->login_name,send->login_passwd);
@@ -152,10 +152,10 @@ void register_user(sLoginInfo *send, int newfd)
 		enter_write = write(fd, "\n", 1);
 		if(nwrite != 0 && enter_write != 0)
 		{
-			back_type = REGIST_SUCCESS;//type 2
+			back_type = REGIST_SUCCESS;//type 12
 			write(newfd, &back_type, sizeof(int));
 		}else{
-			back_type = REGIST_FAILED;//type 0
+			back_type = REGIST_FAILED;//type 10
 			write(newfd, &back_type, sizeof(int));
 		}
 	}
