@@ -110,14 +110,14 @@ void register_user(sLoginInfo *send, int newfd)
 {
 	pthread_mutex_lock(&g_mutex);
 	char *file[3];
-	char read_buf[BUF_SIZE];
-	char all_buf[BUF_SIZE];
+	char read_buf[BUF_SIZE] = {0};
+	char all_buf[BUF_SIZE] = {0};
 	int i,back_type = 0;
 	int fd, nwrite, enter_write;
 	int user_login_flag = 0;
 	off_t off_len = 0;
 
-	if((fd = open(FILENAME,O_CREAT|O_RDWR|O_APPEND,0644)) < 0)
+	if((fd = open(FILENAME,O_CREAT|O_RDWR|O_APPEND,0644)) == ERR)
 		pri_err("open");
 
 	while(1)
@@ -163,6 +163,53 @@ void register_user(sLoginInfo *send, int newfd)
 	close(fd);
 }
 
+void check_login(sLoginInfo *send, int newfd)
+{
+	char *file[3];
+	char read_buf[BUF_SIZE] = {0};
+	char all_buf[BUF_SIZE];
+	int i,back_type = 0;
+	int fd, nwrite, enter_write;
+	int user_login_flag = 0;
+	off_t off_len = 0;
+
+	if((fd = open(FILENAME, O_RDONLY,0644)) == ERR)
+		pri_err("open file");
+	while(1)
+	{
+		lseek(fd, off_len, SEEK_SET);
+		if(read(fd, read_buf,BUF_SIZE) == 0)
+			break;
+		off_len += strlen(read_buf) + 2;
+		i = 0;
+		file[i++] = strtok(read_buf,":");
+		while(file[i++] = strtok(NULL, ":"))
+			;
+		if(strcmp(file[0], send->login_name) == OK)
+		{
+			if(strcmp(file[1], send->login_passwd) == OK)
+			{
+				bzero(&back_type,sizeof(int));
+				if(init_user(file))
+					back_type = USER_LOGIN_FAILED_ONLINE;//user online
+				else
+					back_type = USER_LOGIN_SUCCESS;
+				break;
+			}else{
+
+				bzero(&back_type, sizeof(int));
+				back_type = USER_LOGIN_PASSWD_ERROR;//passwd error
+				break;
+			}
+		}else{
+			bzero(&back_type,sizeof(int));
+			back_type = USER_LOGIN_FAILED;//no user name
+		}
+		memset(read_buf, 0,sizeof(read_buf));
+	}
+	write(newfd, &back_type, sizeof(int));
+	close(fd);
+}
 
 
 void pri_err(char *msg)

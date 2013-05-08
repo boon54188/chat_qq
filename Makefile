@@ -1,12 +1,16 @@
 CFLAGS = -g
 CC = gcc -lpthread
-objects = server.o #client.o
-TARGET = server #client
+objects = server.o check_online.o#client.o 
+server: $(objects)
+	$(CC) -o server $(objects)
+TARGET = server  #client
 
 ALL:$(TARGET)
 
-server.o: server.h
-	$(CC) $(CFLAGS) -c server.c
+server.o: server.h check_online.c
+	$(CC) $(CFLAGS) -c server.c check_online.c
+
+
 #client.o:
 #	$(CC) $(CFLAGS) -c client.c
 	
