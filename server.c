@@ -1,16 +1,74 @@
-#include "head.h"
+#include "server.h"
 
-void analyze_type(sLoginInfo *send, int newfd)
+int main(void)
 {
-	int count;
-	for(count = 0; count < p[count].type_flag != 0;count++)
+	int sockfd;
+	struct sockaddr_in serv_addr;
+	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == ERR)
+		pri_err("socket");
+
+	bzero(&serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(PORT);
+	inet_pton(AF_INET, IP, &serv_addr.sin_addr);
+
+	//端口重用
+	int on = 1;
+	if((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) == ERR)
+		pri_err("setsockopt");
+	if((bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) == ERR)
+		pri_err("bind");
+	if((listen(sockfd, MAX_USER)) == ERR)
+		pri_err("listen");
+
+	printf("waitting client connection…………\n");
+
+	accept_client(sockfd);
+
+	return 0;
+}
+
+void accept_client(int sockfd)
+{
+	int newfd, count_fd = 0;
+	struct sockaddr_in client_addr;
+	socklen_t len = sizeof(struct sockaddr_in);
+
+	while(1)
 	{
-		if(send->type == p[count].type_flag)
+		if((newfd = accept(sockfd, (struct sockaddr *)&client_addr, &len)) == ERR)
+			pri_err("accept");
+		printf("%s	connect, port %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
+
+		while(count_fd < MAX_USER)
 		{
-			p[count].fun(send, newfd);
-			break;
+			if(clients[count_fd].sockfd == SOCKET_OK)
+			{
+				clients[count_fd].sockfd = newfd;
+				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
+				break;
+			}
+		}
+		if((pthread_create(&clients[count_fd].tid, NULL, pthread_func,&clients[count_fd].sockfd)) == ERR)
+			pri_err("pthread_create");
+	}
+	close(sockfd);
+	close(newfd);
+}
+
+void client_exit(sLoginInfo *send, int exit_sockfd)
+{
+	int count_fd;
+	for(count_fd = 0; count_fd < MAX_USER; count_fd++)
+	{
+		if(clients[count_fd].sockfd == exit_sockfd)
+		{
+				break;
 		}
 	}
+	fprintf(stderr,"client:	%s	exit.",clients[count_fd].user_name);
+	memset(&clients[count_fd], 0, sizeof(clients[count_fd]));
+	close(exit_sockfd);
 }
 
 void *pthread_func(void *arg)
@@ -35,59 +93,77 @@ void *pthread_func(void *arg)
 	client_exit(p_info, newfd);
 }
 
-int main(void)
+void analyze_type(sLoginInfo *send, int newfd)
 {
-	int sockfd;
-	struct sockaddr_in serv_addr;
-	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < ERR)
-		pri_err("socket");
-
-	bzero(&serv_addr, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(PORT);
-	inet_pton(AF_INET, IP, &serv_addr.sin_addr);
-
-	//端口重用
-	int on = 1;
-	if((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < ERR)
-		pri_err("setsockopt");
-	if((bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < ERR)
-		pri_err("bind");
-	if((listen(sockfd, MAX_USER)) < ERR)
-		pri_err("listen");
-
-	printf("waitting client connection…………\n");
-
-	accept_client(sockfd);
+	int count;
+	for(count = 0; count < pair[count].flag != 0;count++)
+	{
+		if(send->type == pair[count].flag)
+		{
+			pair[count].func(send, newfd);
+			break;
+		}
+	}
 }
 
-void accept_client(int sockfd)
+void register_user(sLoginInfo *send, int newfd)
 {
-	int newfd, count_fd = 0;
-	struct sockaddr_in client_addr;
-	socklen_t len = sizeof(struct sockaddr_in);
+	pthread_mutex_lock(&g_mutex);
+	char *file[3];
+	char read_buf[BUF_SIZE];
+	char all_buf[BUF_SIZE];
+	int i,back_type = 0;
+	int fd, nwrite, enter_write;
+	int user_login_flag = 0;
+	off_t off_len = 0;
+
+	if((fd = open(FILENAME,O_CREAT|O_RDWR|O_APPEND,0644)) < 0)
+		pri_err("open");
 
 	while(1)
 	{
-		if((newfd = accept(sockfd, (struct sockaddr *)&client_addr, &len)) < ERR)
-			pri_err("accept");
-		printf("%s	connect, port %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
-
-		while(count_fd < MAX_USER)
+		lseek(fd, off_len, SEEK_SET);
+		if(read(fd, read_buf, BUF_SIZE) == 0)
 		{
-			if(clients[count_fd].sockfd == SOCKET_OK)
+			break;
+		}else{
+			i = 0;
+			char str[BUF_SIZE] = {0};
+			strcpy(str, read_buf);
+			file[i++] = strtok(read_buf,":");
+			while(file[i++] = strtok(NULL,":"))
+				;
+			if(strcmp(file[0], send->login_name) == OK)
 			{
-				clients[count_fd].sockfd = newfd;
-				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
+				user_login_flag = REGIST_EXITED;
 				break;
 			}
+			off_len += strlen(str) + 2;
+			memset(str, 0, sizeof(str));
 		}
-		if((pthread_create(&clients[count_fd].tid, NULL, pthread_fun,&clients[count_fd].sockfd)) < ERR)
-			pri_err("pthread_create");
 	}
-	close(sockfd)
-	close(newfd);
+	if(user_login_flag == REGIST_EXITED)
+	{
+		back_type = REGIST_EXITED; //type 1
+		write(newfd, &back_type,sizeof(int));
+	}else{
+		sprintf(all_buf, "%s:%s",send->login_name,send->login_passwd);
+		nwrite = write(fd, all_buf,strlen(all_buf)+1);
+		enter_write = write(fd, "\n", 1);
+		if(nwrite != 0 && enter_write != 0)
+		{
+			back_type = REGIST_SUCCESS;//type 2
+			write(newfd, &back_type, sizeof(int));
+		}else{
+			back_type = REGIST_FAILED;//type 0
+			write(newfd, &back_type, sizeof(int));
+		}
+	}
+	pthread_mutex_unlock(&g_mutex);
+	close(fd);
 }
+
+
 
 void pri_err(char *msg)
 {
