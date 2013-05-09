@@ -46,6 +46,8 @@ void check_login(sLoginInfo *send, int newfd);
 
 void client_exit(sLoginInfo *send, int exit_sockfd);
 
+
+
 client_info clients[MAX_USER];
 pthread_mutex_t  g_mutex = PTHREAD_MUTEX_INITIALIZER;
 

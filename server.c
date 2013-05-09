@@ -1,5 +1,6 @@
 #include "server.h"
 
+
 int main(void)
 {
 	int sockfd;
@@ -38,7 +39,7 @@ void accept_client(int sockfd)
 	{
 		if((newfd = accept(sockfd, (struct sockaddr *)&client_addr, &len)) == ERR)
 			pri_err("accept");
-		printf("%s	connect, port %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
+		printf("user:%s	connect, port %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
 
 		while(count_fd < MAX_USER)
 		{
@@ -66,7 +67,7 @@ void client_exit(sLoginInfo *send, int exit_sockfd)
 				break;
 		}
 	}
-	fprintf(stderr,"client:	%s	exit.",clients[count_fd].user_name);
+	fprintf(stderr,"user:%s	exit.",clients[count_fd].user_name);
 	memset(&clients[count_fd], 0, sizeof(clients[count_fd]));
 	close(exit_sockfd);
 }
