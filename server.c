@@ -11,7 +11,8 @@ int main(void)
 	bzero(&serv_addr, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
-	inet_pton(AF_INET, IP, &serv_addr.sin_addr);
+	//inet_pton(AF_INET, IP, &serv_addr.sin_addr);
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	//端口重用
 	int on = 1;
@@ -210,6 +211,26 @@ void check_login(sLoginInfo *send, int newfd)
 	}
 	write(newfd, &back_type, sizeof(int));
 	close(fd);
+}
+
+void get_online_user(sLoginInfo *send, int newfd)
+{
+	int count;
+	char buf[BUF_SIZE] = {0};
+	char user_buf[BUF_SIZE] = {0};
+	char no_user_online[] = {"on user online, only you!"};
+	for(count = 0; count < MAX_USER; count++)
+	{
+		if((clients[count].sockfd != newfd) && (clients[count].online == IS_ONLINE))
+		{
+			sprintf(buf, "(user):%s\t", clients[count].user_name);
+			strcat(user_buf,buf);
+		}
+	}
+	if(strcmp(user_buf,"") == OK)
+		write(newfd, no_user_online, strlen(no_user_online)+1);
+	else
+		write(newfd, user_buf, strlen(user_buf)+ 1);
 }
 
 

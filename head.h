@@ -16,11 +16,12 @@
 
 #define	USER_REGISTER	1		//用户注册
 #define	USER_LOGIN		2		//用户登录
-#define	PUBLIC_CHAT		3		//全部聊天
-#define	PRIVAT_CHAT		4		//私人聊天
-#define	GROUP_CHAT		5		//群聊
-#define SEND_FILE		6		//发送文件
-#define	USER_ONLINE		7		//在线用户
+#define USER_QUIT		3		//用户退出
+#define	PUBLIC_CHAT		4		//全部聊天
+#define	PRIVAT_CHAT		5		//私人聊天
+#define	GROUP_CHAT		6		//群聊
+#define SEND_FILE		7		//发送文件
+#define	USER_ONLINE		8		//在线用户
 
 
 enum user_login {

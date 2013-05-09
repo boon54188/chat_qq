@@ -1,9 +1,11 @@
+TARGET = server  #client
 CFLAGS = -g
 CC = gcc -lpthread
+
 objects = server.o check_online.o#client.o 
+
 server: $(objects)
 	$(CC) -o server $(objects)
-TARGET = server  #client
 
 ALL:$(TARGET)
 

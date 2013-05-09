@@ -1,3 +1,6 @@
+#ifndef __SERVER_H__
+#define __SERVER_H__
+
 #include "head.h"
 #include<fcntl.h>
 #include<sys/types.h>
@@ -47,13 +50,16 @@ void check_login(sLoginInfo *send, int newfd);
 void client_exit(sLoginInfo *send, int exit_sockfd);
 
 
-
 client_info clients[MAX_USER];
-pthread_mutex_t  g_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-flag_pairing pair[]={
-	{USER_REGISTER,	register_user},
-	{USER_LOGIN,	check_login},
-	{USER_QUIT,		client_exit},
-	{0,NULL}
+static pthread_mutex_t  g_mutex = PTHREAD_MUTEX_INITIALIZER;
+static flag_pairing pair[]={
+    {USER_REGISTER, register_user},
+    {USER_LOGIN,    check_login},
+    {USER_QUIT,     client_exit},
+    {0,NULL}
 };
+
+
+
+#endif
