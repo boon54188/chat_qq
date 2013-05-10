@@ -68,7 +68,7 @@ void client_exit(sLoginInfo *send, int exit_sockfd)
 				break;
 		}
 	}
-	fprintf(stderr,"user:%s	exit.",clients[count_fd].user_name);
+	fprintf(stderr,"user:%s	exit.\n",clients[count_fd].user_name);
 	memset(&clients[count_fd], 0, sizeof(clients[count_fd]));
 	close(exit_sockfd);
 }
@@ -146,7 +146,7 @@ void register_user(sLoginInfo *send, int newfd)
 	}
 	if(user_login_flag == REGIST_EXITED)
 	{
-		back_type = REGIST_EXITED; //type 11
+		back_type = REGIST_EXITED; //type 51
 		write(newfd, &back_type,sizeof(int));
 	}else{
 		sprintf(all_buf, "%s:%s",send->login_name,send->login_passwd);
@@ -154,10 +154,10 @@ void register_user(sLoginInfo *send, int newfd)
 		enter_write = write(fd, "\n", 1);
 		if(nwrite != 0 && enter_write != 0)
 		{
-			back_type = REGIST_SUCCESS;//type 12
+			back_type = REGIST_SUCCESS;//type 52
 			write(newfd, &back_type, sizeof(int));
 		}else{
-			back_type = REGIST_FAILED;//type 10
+			back_type = REGIST_FAILED;//type 50
 			write(newfd, &back_type, sizeof(int));
 		}
 	}
@@ -195,7 +195,9 @@ void check_login(sLoginInfo *send, int newfd)
 				if(init_user(file))
 					back_type = USER_LOGIN_FAILED_ONLINE;//user online
 				else
+				{
 					back_type = USER_LOGIN_SUCCESS;
+				}
 				break;
 			}else{
 
@@ -210,6 +212,7 @@ void check_login(sLoginInfo *send, int newfd)
 		memset(read_buf, 0,sizeof(read_buf));
 	}
 	write(newfd, &back_type, sizeof(int));
+	get_online_user(send,newfd );
 	close(fd);
 }
 
@@ -224,13 +227,14 @@ void get_online_user(sLoginInfo *send, int newfd)
 		if((clients[count].sockfd != newfd) && (clients[count].online == IS_ONLINE))
 		{
 			sprintf(buf, "(user):%s\t", clients[count].user_name);
-			strcat(user_buf,buf);
+			write(newfd, buf, strlen(buf)+1);
+			//strcat(user_buf,buf);
 		}
 	}
 	if(strcmp(user_buf,"") == OK)
 		write(newfd, no_user_online, strlen(no_user_online)+1);
-	else
-		write(newfd, user_buf, strlen(user_buf)+ 1);
+	//else
+	//	write(newfd, user_buf, strlen(user_buf)+ 1);
 }
 
 

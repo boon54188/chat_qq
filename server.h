@@ -46,18 +46,19 @@ void *pthread_func(void *arg);
 void analyze_type(sLoginInfo *send, int newfd);
 void register_user(sLoginInfo *send, int newfd);
 void check_login(sLoginInfo *send, int newfd);
-
 void client_exit(sLoginInfo *send, int exit_sockfd);
+void get_online_user(sLoginInfo *send, int newfd);
 
 
 client_info clients[MAX_USER];
 
 static pthread_mutex_t  g_mutex = PTHREAD_MUTEX_INITIALIZER;
 static flag_pairing pair[]={
-    {USER_REGISTER, register_user},
-    {USER_LOGIN,    check_login},
-    {USER_QUIT,     client_exit},
-    {0,NULL}
+	{USER_REGISTER, register_user},
+	{USER_LOGIN,    check_login},
+	{USER_QUIT,     client_exit},
+	{USER_ONLINE,	get_online_user},
+	{0,NULL}
 };
 
 

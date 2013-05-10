@@ -16,16 +16,19 @@
 
 #define	USER_REGISTER	1		//用户注册
 #define	USER_LOGIN		2		//用户登录
-#define USER_QUIT		3		//用户退出
-#define	PUBLIC_CHAT		4		//全部聊天
-#define	PRIVAT_CHAT		5		//私人聊天
-#define	GROUP_CHAT		6		//群聊
-#define SEND_FILE		7		//发送文件
-#define	USER_ONLINE		8		//在线用户
+#define	PUBLIC_CHAT		3		//全部聊天
+#define	PRIVAT_CHAT		4		//私人聊天
+#define	GROUP_CHAT		5		//群聊
+#define SEND_FILE		6		//发送文件
+
+#define USER_QUIT		9		//用户退出
+#define	USER_ONLINE		10		//在线用户
+#define HEART_DATA		11		//heart
+#define USER_LINE		12		//用户上线
 
 
 enum user_login {
-	REGIST_FAILED = 10,				//注册失败
+	REGIST_FAILED = 50,				//注册失败
 	REGIST_EXITED,					//注册的用户已经存在
 	REGIST_SUCCESS,					//注册成功
 
