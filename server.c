@@ -237,6 +237,17 @@ void get_online_user(sLoginInfo *send, int newfd)
 	//	write(newfd, user_buf, strlen(user_buf)+ 1);
 }
 
+void private_chat(sLoginInfo *send, int newfd)
+{
+	char dest[BUF_SIZE] = {0};
+	char no_user_online[] = {"user on online!"};
+	
+	if(get_sockfd(send->login_name) == OK)
+		write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
+	else
+		format_buf(dest,send->buf, newfd);
+		write(newfd, dest, strlen(dest)+1);//error newfd
+}
 
 void pri_err(char *msg)
 {
