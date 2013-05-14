@@ -48,6 +48,7 @@ void accept_client(int sockfd)
 			{
 				clients[count_fd].sockfd = newfd;
 				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
+				count_fd++;
 				break;
 			}
 		}
@@ -114,7 +115,7 @@ void register_user(sLoginInfo *send, int newfd)
 	char *file[3];
 	char read_buf[BUF_SIZE] = {0};
 	char all_buf[BUF_SIZE] = {0};
-	int i,back_type = 0;
+	int i;
 	int fd, nwrite, enter_write;
 	int user_login_flag = 0;
 	off_t off_len = 0;
@@ -135,7 +136,7 @@ void register_user(sLoginInfo *send, int newfd)
 			file[i++] = strtok(read_buf,":");
 			while(file[i++] = strtok(NULL,":"))
 				;
-			if(strcmp(file[0], send->login_name) == OK)
+			if(strcmp(file[0], send->user) == OK)
 			{
 				user_login_flag = REGIST_EXITED;
 				break;
@@ -146,19 +147,19 @@ void register_user(sLoginInfo *send, int newfd)
 	}
 	if(user_login_flag == REGIST_EXITED)
 	{
-		back_type = REGIST_EXITED; //type 51
-		write(newfd, &back_type,sizeof(int));
+		send->type = REGIST_EXITED; //type 51
+		write(newfd, send,sizeof(sLoginInfo));
 	}else{
-		sprintf(all_buf, "%s:%s",send->login_name,send->login_passwd);
+		sprintf(all_buf, "%s:%s",send->user,send->passwd);
 		nwrite = write(fd, all_buf,strlen(all_buf)+1);
 		enter_write = write(fd, "\n", 1);
 		if(nwrite != 0 && enter_write != 0)
 		{
-			back_type = REGIST_SUCCESS;//type 52
-			write(newfd, &back_type, sizeof(int));
+			send->type = REGIST_SUCCESS;//type 52
+			write(newfd, send, sizeof(sLoginInfo));
 		}else{
-			back_type = REGIST_FAILED;//type 50
-			write(newfd, &back_type, sizeof(int));
+			send->type = REGIST_FAILED;//type 50
+			write(newfd, send, sizeof(sLoginInfo));
 		}
 	}
 	pthread_mutex_unlock(&g_mutex);
@@ -170,7 +171,7 @@ void check_login(sLoginInfo *send, int newfd)
 	char *file[3];
 	char read_buf[BUF_SIZE] = {0};
 	char all_buf[BUF_SIZE];
-	int i,back_type = 0;
+	int i;
 	int fd, nwrite, enter_write;
 	int user_login_flag = 0;
 	off_t off_len = 0;
@@ -187,35 +188,36 @@ void check_login(sLoginInfo *send, int newfd)
 		file[i++] = strtok(read_buf,":");
 		while(file[i++] = strtok(NULL, ":"))
 			;
-		if(strcmp(file[0], send->login_name) == OK)
+		if(strcmp(file[0], send->user) == OK)
 		{
-			if(strcmp(file[1], send->login_passwd) == OK)
+			if(strcmp(file[1], send->passwd) == OK)
 			{
-				bzero(&back_type,sizeof(int));
+				bzero(send,sizeof(sLoginInfo));
 				if(init_user(file))
-					back_type = USER_LOGIN_FAILED_ONLINE;//user online
+					send->type= USER_LOGIN_FAILED_ONLINE;//user online
 				else
 				{
-					back_type = USER_LOGIN_SUCCESS;
+					send->type = USER_LOGIN_SUCCESS;
 				}
 				break;
 			}else{
 
-				bzero(&back_type, sizeof(int));
-				back_type = USER_LOGIN_PASSWD_ERROR;//passwd error
+				bzero(send, sizeof(sLoginInfo));
+				send->type = USER_LOGIN_PASSWD_ERROR;//passwd error
 				break;
 			}
 		}else{
-			bzero(&back_type,sizeof(int));
-			back_type = USER_LOGIN_FAILED;//no user name
+			bzero(send,sizeof(sLoginInfo));
+			send->type = USER_LOGIN_FAILED;//no user name
 		}
 		memset(read_buf, 0,sizeof(read_buf));
 	}
-	write(newfd, &back_type, sizeof(int));
-	//get_online_user(send,newfd );
+	write(newfd, send, sizeof(sLoginInfo));
+	get_online_user(send,newfd );
 	close(fd);
 }
 
+/**/
 void get_online_user(sLoginInfo *send, int newfd)
 {
 	int count;
@@ -227,7 +229,9 @@ void get_online_user(sLoginInfo *send, int newfd)
 		if((clients[count].sockfd != newfd) && (clients[count].online == IS_ONLINE))
 		{
 			sprintf(user_buf, "(user):%s\t", clients[count].user_name);
-			write(newfd, buf, strlen(buf)+1);
+			send->srnm = clients[count].online;
+			memcpy(send->user, clients[count].user_name, USER_INFO_SIZE);
+			write(newfd, send, sizeof(sLoginInfo));
 			//strcat(user_buf,buf);
 		}
 	}
@@ -243,11 +247,19 @@ void private_chat(sLoginInfo *send, int newfd)
 	char no_user_online[] = {"user on online!"};
 	int dest_fd;
 	
-	if(dest_fd = get_sockfd(send->login_name) == NO_NAME)
+	if(dest_fd = get_sockfd(send->user) == NO_NAME)
 		write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
 	else
-		format_buf(dest,send->buf, newfd);
+		format_buf(dest,send->msg, newfd);
 		write(dest_fd, dest, strlen(dest)+1);//error newfd
+}
+
+void group_chat(sLoginInfo *send, int newfd)
+{
+	 
+	get_all_sockfd(send->user);
+	select_all_chat(send, newfd);
+	
 }
 
 void pri_err(char *msg)

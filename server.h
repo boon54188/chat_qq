@@ -31,6 +31,7 @@ typedef struct info{
 	char user_name[USER_INFO_SIZE];
 	char user_passwd[USER_INFO_SIZE];
 	int online;
+	int send_flag;
 }client_info;
 
 

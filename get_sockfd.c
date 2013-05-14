@@ -13,6 +13,7 @@ int get_sockfd(char dest[])
 	return 0;
 }
 
+
 void format_buf(char *dest, char *content, int newfd)
 {
 	int count ;

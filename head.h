@@ -11,7 +11,7 @@
 #define IP				"10.5.22.10"
 #define PORT			12345
 #define USER_INFO_SIZE	25
-#define BUF_SIZE		1024
+#define BUF_SIZE		512
 
 
 #define	USER_REGISTER	1		//用户注册
@@ -39,9 +39,15 @@ enum user_login {
 };
 
 typedef struct login_info{
+	char user[USER_INFO_SIZE];		//用户名
+	union {
+		char passwd[USER_INFO_SIZE];		//用户密码 
+		char msg[BUF_SIZE];
+	};
+	unsigned short port;
+	unsigned int recv_ip;
 	int type;								//类型（注册/登录）
-	char login_name[USER_INFO_SIZE];		//用户名
-	char login_passwd[USER_INFO_SIZE];		//用户密码 
+	int srnm;
 }sLoginInfo;
 
 
