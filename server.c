@@ -44,7 +44,7 @@ void accept_client(int sockfd)
 
 		while(count_fd < MAX_USER)
 		{
-			if(clients[count_fd].sockfd == SOCKET_OK)
+			if(clients[count_fd].sockfd == SOCKET_NULL)
 			{
 				clients[count_fd].sockfd = newfd;
 				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
@@ -212,7 +212,7 @@ void check_login(sLoginInfo *send, int newfd)
 		memset(read_buf, 0,sizeof(read_buf));
 	}
 	write(newfd, &back_type, sizeof(int));
-	get_online_user(send,newfd );
+	//get_online_user(send,newfd );
 	close(fd);
 }
 
@@ -226,7 +226,7 @@ void get_online_user(sLoginInfo *send, int newfd)
 	{
 		if((clients[count].sockfd != newfd) && (clients[count].online == IS_ONLINE))
 		{
-			sprintf(buf, "(user):%s\t", clients[count].user_name);
+			sprintf(user_buf, "(user):%s\t", clients[count].user_name);
 			write(newfd, buf, strlen(buf)+1);
 			//strcat(user_buf,buf);
 		}
@@ -241,12 +241,13 @@ void private_chat(sLoginInfo *send, int newfd)
 {
 	char dest[BUF_SIZE] = {0};
 	char no_user_online[] = {"user on online!"};
+	int dest_fd;
 	
-	if(get_sockfd(send->login_name) == OK)
+	if(dest_fd = get_sockfd(send->login_name) == NO_NAME)
 		write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
 	else
 		format_buf(dest,send->buf, newfd);
-		write(newfd, dest, strlen(dest)+1);//error newfd
+		write(dest_fd, dest, strlen(dest)+1);//error newfd
 }
 
 void pri_err(char *msg)

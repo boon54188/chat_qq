@@ -25,7 +25,7 @@ int check_online(char *file[])
 	int count;
 	for(count = 0; count < MAX_USER; count++)
 	{
-		if(clients[count].online == IS_ONLINE)
+		if((strcmp(clients[count].user_name, file[0])== OK) && (clients[count].online == IS_ONLINE))
 			return IS_ONLINE;
 	}
 	return NO_ONLINE;

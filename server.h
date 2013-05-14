@@ -9,8 +9,9 @@
 #include<time.h>
 
 #define ERR			-1
-#define SOCKET_OK	0
+#define SOCKET_NULL	0
 #define OK			0
+#define NO_NAME		0
 #define IS_ONLINE	1
 #define NO_ONLINE	0
 
