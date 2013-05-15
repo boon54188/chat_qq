@@ -44,7 +44,7 @@ void accept_client(int sockfd)
 
 		while(count_fd < MAX_USER)
 		{
-			if(clients[count_fd].sockfd == SOCKET_NULL)
+			if(clients[count_fd].sockfd == SOCKET_NULL)//socket zero
 			{
 				clients[count_fd].sockfd = newfd;
 				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
