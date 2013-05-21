@@ -1,9 +1,9 @@
 #include "server.h"
 
 
-int main(void)
+int32 main(void)
 {
-	int sockfd;
+	int32 sockfd;
 	struct sockaddr_in serv_addr;
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == ERR)
 		pri_err("socket");
@@ -15,7 +15,7 @@ int main(void)
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	//端口重用
-	int on = 1;
+	int32 on = 1;
 	if((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) == ERR)
 		pri_err("setsockopt");
 	if((bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) == ERR)
@@ -30,9 +30,9 @@ int main(void)
 	return 0;
 }
 
-void accept_client(int sockfd)
+void accept_client(int32 sockfd)
 {
-	int newfd, count = 0;
+	int32 newfd, count = 0;
 	struct sockaddr_in client_addr;
 	sLoginInfo *send;
 	socklen_t len = sizeof(struct sockaddr_in);
@@ -51,6 +51,7 @@ void accept_client(int sockfd)
 				clients[count].sockfd = newfd;
 				clients[count].recv_ip = client_addr.sin_addr.s_addr;
 				clients[count].recv_port = client_addr.sin_port;
+				clients[count].send_flag = 0;//0 group chat no
 				DEBUG("clients[%d]sockfd = %d\n", clients[count].sockfd);
 				count++;
 				break;
@@ -63,9 +64,9 @@ void accept_client(int sockfd)
 	close(newfd);
 }
 
-void client_exit(sLoginInfo *send, int exit_sockfd)
+void client_exit(sLoginInfo *send, int32 exit_sockfd)
 {
-	int count_fd;
+	int32 count_fd;
 	for(count_fd = 0; count_fd < MAX_USER; count_fd++)
 	{
 		if(clients[count_fd].sockfd == exit_sockfd)
@@ -80,9 +81,9 @@ void client_exit(sLoginInfo *send, int exit_sockfd)
 
 void *pthread_func(void *arg)
 {
-	int newfd = *((int *)arg);
-	char buf[BUF_SIZE] = {0};
-	int nread = 0;
+	int32 newfd = *((int32 *)arg);
+	int8 buf[BUF_SIZE] = {0};
+	int32 nread = 0;
 	sLoginInfo send, *p_info;
 	p_info = &send;
 	
@@ -101,9 +102,9 @@ void *pthread_func(void *arg)
 	client_exit(p_info, newfd);
 }
 
-void analyze_type(sLoginInfo *send, int newfd)
+void analyze_type(sLoginInfo *send, int32 newfd)
 {
-	int count;
+	int32 count;
 	for(count = 0; count < pair[count].flag != 0;count++)
 	{
 		if(send->type == pair[count].flag)
@@ -114,15 +115,15 @@ void analyze_type(sLoginInfo *send, int newfd)
 	}
 }
 
-void register_user(sLoginInfo *send, int newfd)
+void register_user(sLoginInfo *send, int32 newfd)
 {
 	pthread_mutex_lock(&g_mutex);
-	char *file[3];
-	char read_buf[BUF_SIZE] = {0};
-	char all_buf[BUF_SIZE] = {0};
-	int i;
-	int fd, nwrite, enter_write;
-	int user_login_flag = 0;
+	int8 *file[3];
+	int8 read_buf[BUF_SIZE] = {0};
+	int8 all_buf[BUF_SIZE] = {0};
+	int32 i;
+	int32 fd, nwrite, enter_write;
+	int32 user_login_flag = 0;
 	off_t off_len = 0;
 
 	if((fd = open(FILENAME,O_CREAT|O_RDWR|O_APPEND,0644)) == ERR)
@@ -136,7 +137,7 @@ void register_user(sLoginInfo *send, int newfd)
 			break;
 		}else{
 			i = 0;
-			char str[BUF_SIZE] = {0};
+			int8 str[BUF_SIZE] = {0};
 			strcpy(str, read_buf);
 			file[i++] = strtok(read_buf,":");
 			while(file[i++] = strtok(NULL,":"))
@@ -171,14 +172,14 @@ void register_user(sLoginInfo *send, int newfd)
 	close(fd);
 }
 
-void check_login(sLoginInfo *send, int newfd)
+void check_login(sLoginInfo *send, int32 newfd)
 {
-	char *file[3];
-	char read_buf[BUF_SIZE] = {0};
-	char all_buf[BUF_SIZE];
-	int i;
-	int fd, nwrite, enter_write;
-	int user_login_flag = 0;
+	int8 *file[3];
+	int8 read_buf[BUF_SIZE] = {0};
+	int8 all_buf[BUF_SIZE];
+	int32 i;
+	int32 fd, nwrite, enter_write;
+	int32 user_login_flag = 0;
 	off_t off_len = 0;
 
 	if((fd = open(FILENAME, O_RDONLY,0644)) == ERR)
@@ -223,12 +224,12 @@ void check_login(sLoginInfo *send, int newfd)
 }
 
 /**/
-void get_online_user(sLoginInfo *send, int newfd)
+void get_online_user(sLoginInfo *send, int32 newfd)
 {
-	int count;
-	char buf[BUF_SIZE] = {0};
-	char user_buf[BUF_SIZE] = {0};
-	char no_user_online[] = {"on user online, only you!"};
+	int32 count;
+	int8 buf[BUF_SIZE] = {0};
+	int8 user_buf[BUF_SIZE] = {0};
+	int8 no_user_online[] = {"on user online, only you!"};
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if((clients[count].sockfd != newfd) && (clients[count].online == IS_ONLINE))
@@ -241,38 +242,52 @@ void get_online_user(sLoginInfo *send, int newfd)
 		}
 	}
 	if(strcmp(user_buf,"") == OK)
-		write(newfd, no_user_online, strlen(no_user_online)+1);
+	{
+		memcpy(send->user, no_user_online,sizeof(no_user_online));
+		write(newfd, send, sizeof(sLoginInfo));
+	}
 	//else
 	//	write(newfd, user_buf, strlen(user_buf)+ 1);
 }
 
-void private_chat(sLoginInfo *send, int newfd)
+void private_chat(sLoginInfo *send, int32 newfd)
 {
-	char dest[BUF_SIZE] = {0};
-	char no_user_online[] = {"user on online!"};
-	int dest_fd;
-	int subnet;
-	subnet = diff_url(send, newfd);
+	int8 dest[BUF_SIZE] = {0};
+	int8 no_user_online[] = {"user on online! or no user\n"};
+	int32 dest_fd;
+	int32 subnet;
+	subnet = diff_subnet(send, newfd);
 
-	if(subnet /* case ?:&& link ok*/)
+	dest_fd = get_sockfd(send->user);
+	if(dest_fd == NO_NAME)//target name 0
 	{
-		wirte(newfd, send, sizeof(sLoginInfo));
-		/*case ?:read link ok*/
-		/*break;*/
+		memcpy(send->msg, no_user_online, sizeof(no_user_online));
+		write(newfd, send, sizeof(sLoginInfo));
+
 	}else{
+		if(subnet /* case ?:&& link ok*/)
+		{
+			write(newfd, send, sizeof(sLoginInfo));
+			/*case ?:read link ok*/
+			/*ansewer ?*/
+			read(newfd, send, sizeof(sLoginInfo));
+			if(send->type == LINK_NO)
+				return ;
+			else{
+				write(dest_fd, send, sizeof(sLoginInfo));
+			}
 	
-		if(dest_fd = get_sockfd(send->user) == NO_NAME)
-			write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
-		else
-			//format_buf(dest,send->msg, newfd);
-			//write(dest_fd, dest, strlen(dest)+1);//error newfd
-			write(dest_fd, send->msg, strlen(send->msg)+1);
+		}else{
+				//format_buf(dest,send->msg, newfd);
+				//write(dest_fd, dest, strlen(dest)+1);//error newfd
+				write(dest_fd, send, sizeof(sLoginInfo));
+		}
 	}
 }
 
-void public_chat(sLoginInfo *send, int newfd)
+void public_chat(sLoginInfo *send, int32 newfd)
 {
-	int count;
+	int32 count;
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if(clients[count].sockfd == SOCKET_NULL)
@@ -283,8 +298,27 @@ void public_chat(sLoginInfo *send, int newfd)
 	
 }
 
+void trans_file(sLoginInfo *send, int32 newfd)
+{
+	if(subnet)
+	{
+		write(newfd, send, sizeof(sLoginInfo));
+		/*	?	*/
+		read(newfd, send, sizeof(sLoginInfo));
+		if(send->type == LINK_OK)
+			return ;
+		else{
+			//file upload
+		}
+	
+	}else{
+		//file upload
+		}
 
-void pri_err(char *msg)
+}
+
+
+void pri_err(int8 *msg)
 {
 	perror(msg);
 	exit(EXIT_FAILURE);

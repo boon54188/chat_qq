@@ -26,6 +26,13 @@
 #define HEART_DATA		11		//heart
 #define USER_LINE		12		//用户上线
 
+#define LINK_FLAG		20		//p2p连接成功
+
+
+typedef char	int8;
+typedef unsigned short u_int16;
+typedef int	int32;
+typedef unsigned int u_int32;
 
 enum user_login {
 	REGIST_FAILED = 50,				//注册失败
@@ -39,15 +46,15 @@ enum user_login {
 };
 
 typedef struct login_info{
-	char user[USER_INFO_SIZE];		//用户名
+	int8 user[USER_INFO_SIZE];		//用户名
 	union {
-		char passwd[USER_INFO_SIZE];		//用户密码 
-		ghar msg[BUF_SIZE];
+		int8 passwd[USER_INFO_SIZE];		//用户密码 
+		int8 msg[BUF_SIZE];
 	};
-	unsigned short port;
-	unsigned int recv_ip;
-	int type;								//类型（注册/登录）
-	int srnm;
+	u_int16 port;
+	u_int32 recv_ip;
+	int32 type;								//类型（注册/登录）
+	int32 srnm;
 }sLoginInfo;
 
 

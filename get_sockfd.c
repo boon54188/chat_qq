@@ -1,10 +1,10 @@
 #include"server.h"
-extern void format_buf(char *dest, char *content, int newfd);
-extern int get_sockfd(char dest[]);
+extern void format_buf(int8 *dest, int8 *content, int32 newfd);
+extern int32 get_sockfd(int8 dest[]);
 
-int get_sockfd(char dest[])
+int32 get_sockfd(int8 dest[])
 {
-	int count;
+	int32 count;
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if(strcmp(clients[count].user_name, dest) == OK)
@@ -14,9 +14,9 @@ int get_sockfd(char dest[])
 }
 
 
-void format_buf(char *dest, char *content, int newfd)
+void format_buf(int8 *dest, int8 *content, int32 newfd)
 {
-	int count ;
+	int32 count ;
 	time_t current_time;
 	for(count = 0; count < MAX_USER;count++)
 	{

@@ -1,10 +1,10 @@
 #include"server.h"
-extern int init_user(char *file[]);
-extern int check_online(char *file[]);
+extern int32 init_user(int8 *file[]);
+extern int32 check_online(int8 *file[]);
 
-int init_user(char *file[])
+int32 init_user(int8 *file[])
 {
-	int count;
+	int32 count;
 	if(check_online(file))
 		return IS_ONLINE;
 	for(count = 0; count < MAX_USER; count++)
@@ -20,9 +20,9 @@ int init_user(char *file[])
 	return NO_ONLINE;
 }
 
-int check_online(char *file[])
+int32 check_online(int8 *file[])
 {
-	int count;
+	int32 count;
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if((strcmp(clients[count].user_name, file[0])== OK) && (clients[count].online == IS_ONLINE))

@@ -2,7 +2,7 @@ TARGET = server  #client
 CFLAGS = -g
 CC = gcc -lpthread
 
-objects = server.o check_online.o get_sockfd.o#client.o 
+objects = server.o check_online.o get_sockfd.o subnet.o#client.o 
 
 server: $(objects)
 	$(CC) -o server $(objects)
@@ -15,6 +15,8 @@ check_online.o: server.h
 	$(CC) $(CFLAGS) -c check_online.c 
 get_sockfd.o: server.h
 	$(CC) $(CFLAGS) -c get_sockfd.c
+subnet.o: server.h
+	$(CC) $(CFLAGS) -c subnet.c
 
 #client.o:
 #	$(CC) $(CFLAGS) -c client.c
