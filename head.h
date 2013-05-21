@@ -42,7 +42,7 @@ typedef struct login_info{
 	char user[USER_INFO_SIZE];		//用户名
 	union {
 		char passwd[USER_INFO_SIZE];		//用户密码 
-		char msg[BUF_SIZE];
+		ghar msg[BUF_SIZE];
 	};
 	unsigned short port;
 	unsigned int recv_ip;

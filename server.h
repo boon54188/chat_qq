@@ -26,10 +26,11 @@
 #endif
 
 typedef struct info{
-	int sockfd;
-	pthread_t tid;
 	char user_name[USER_INFO_SIZE];
 	char user_passwd[USER_INFO_SIZE];
+	unsigned int recv_ip;
+	pthread_t tid;
+	int sockfd;
 	int online;
 	int send_flag;
 }client_info;
@@ -60,6 +61,9 @@ static flag_pairing pair[]={
 	{USER_LOGIN,    check_login},
 	{USER_QUIT,     client_exit},
 	{USER_ONLINE,	get_online_user},
+	{PRIVAT_CHAT,	private_chat},
+	{PUBLIC_CHAT,	public_chat},
+	{SEND_FILE,		}
 	{0,NULL}
 };
 

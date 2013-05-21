@@ -32,8 +32,9 @@ int main(void)
 
 void accept_client(int sockfd)
 {
-	int newfd, count_fd = 0;
+	int newfd, count = 0;
 	struct sockaddr_in client_addr;
+	sLoginInfo *send;
 	socklen_t len = sizeof(struct sockaddr_in);
 
 	while(1)
@@ -41,18 +42,21 @@ void accept_client(int sockfd)
 		if((newfd = accept(sockfd, (struct sockaddr *)&client_addr, &len)) == ERR)
 			pri_err("accept");
 		printf("user:%s	connect, port %d\n", inet_ntoa(client_addr.sin_addr), htons(client_addr.sin_port));
+		
 
-		while(count_fd < MAX_USER)
+		while(count < MAX_USER)
 		{
-			if(clients[count_fd].sockfd == SOCKET_NULL)//socket zero
+			if(clients[count].sockfd == SOCKET_NULL)//socket zero
 			{
-				clients[count_fd].sockfd = newfd;
-				DEBUG("clients[%d]sockfd = %d\n", clients[count_fd].sockfd);
-				count_fd++;
+				clients[count].sockfd = newfd;
+				clients[count].recv_ip = client_addr.sin_addr.s_addr;
+				clients[count].recv_port = client_addr.sin_port;
+				DEBUG("clients[%d]sockfd = %d\n", clients[count].sockfd);
+				count++;
 				break;
 			}
 		}
-		if((pthread_create(&clients[count_fd].tid, NULL, pthread_func,&clients[count_fd].sockfd)) == ERR)
+		if((pthread_create(&clients[count].tid, NULL, pthread_func,&clients[count].sockfd)) == ERR)
 			pri_err("pthread_create");
 	}
 	close(sockfd);
@@ -81,6 +85,7 @@ void *pthread_func(void *arg)
 	int nread = 0;
 	sLoginInfo send, *p_info;
 	p_info = &send;
+	
 	while(1)
 	{
 		nread = read(newfd, &send, sizeof(send));
@@ -246,21 +251,38 @@ void private_chat(sLoginInfo *send, int newfd)
 	char dest[BUF_SIZE] = {0};
 	char no_user_online[] = {"user on online!"};
 	int dest_fd;
+	int subnet;
+	subnet = diff_url(send, newfd);
+
+	if(subnet /* case ?:&& link ok*/)
+	{
+		wirte(newfd, send, sizeof(sLoginInfo));
+		/*case ?:read link ok*/
+		/*break;*/
+	}else{
 	
-	if(dest_fd = get_sockfd(send->user) == NO_NAME)
-		write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
-	else
-		format_buf(dest,send->msg, newfd);
-		write(dest_fd, dest, strlen(dest)+1);//error newfd
+		if(dest_fd = get_sockfd(send->user) == NO_NAME)
+			write(newfd, no_user_online, strlen(no_user_online)+1);//error newfd
+		else
+			//format_buf(dest,send->msg, newfd);
+			//write(dest_fd, dest, strlen(dest)+1);//error newfd
+			write(dest_fd, send->msg, strlen(send->msg)+1);
+	}
 }
 
-void group_chat(sLoginInfo *send, int newfd)
+void public_chat(sLoginInfo *send, int newfd)
 {
-	 
-	get_all_sockfd(send->user);
-	select_all_chat(send, newfd);
+	int count;
+	for(count = 0; count < MAX_USER; count++)
+	{
+		if(clients[count].sockfd == SOCKET_NULL)
+			continue;
+		else
+			write(clients[count].sockfd, send->msg, BUF_SIZE);
+	}
 	
 }
+
 
 void pri_err(char *msg)
 {
