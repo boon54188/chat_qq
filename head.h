@@ -20,6 +20,7 @@
 #define	PRIVAT_CHAT		4		//私人聊天
 #define	GROUP_CHAT		5		//群聊
 #define SEND_FILE		6		//发送文件
+#define GROUP_JOIN		8		//加入群 flag=1
 
 #define USER_QUIT		9		//用户退出
 #define	USER_ONLINE		10		//在线用户

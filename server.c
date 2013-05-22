@@ -259,7 +259,7 @@ void private_chat(sLoginInfo *send, int32 newfd)
 	subnet = diff_subnet(send, newfd);
 
 	dest_fd = get_sockfd(send->user);
-	if(dest_fd == NO_NAME)//target name 0
+	if(dest_fd == NO_NAME)//target fd 0
 	{
 		memcpy(send->msg, no_user_online, sizeof(no_user_online));
 		write(newfd, send, sizeof(sLoginInfo));
@@ -300,6 +300,8 @@ void public_chat(sLoginInfo *send, int32 newfd)
 
 void trans_file(sLoginInfo *send, int32 newfd)
 {
+	int32 dest_fd = get_sockfd(send->user);
+
 	if(subnet)
 	{
 		write(newfd, send, sizeof(sLoginInfo));
@@ -309,10 +311,14 @@ void trans_file(sLoginInfo *send, int32 newfd)
 			return ;
 		else{
 			//file upload
+			upload_file(send, newfd);
+			down_file(send, dest_fd);
 		}
 	
 	}else{
 		//file upload
+			upload_file(send, newfd);
+			down_file(send, dest_fd);
 		}
 
 }

@@ -72,6 +72,8 @@ static flag_pairing pair[]={
 	{PRIVAT_CHAT,	private_chat},
 	{PUBLIC_CHAT,	public_chat},
 	{SEND_FILE,		trans_file},
+	{GROUP_JOIN,	get_send_flag},
+	{GROUP_CHAT,	select_all_chat},
 	{0,NULL}
 };
 
