@@ -271,7 +271,7 @@ void private_chat(sLoginInfo *send, int32 newfd)
 			/*case ?:read link ok*/
 			/*ansewer ?*/
 			read(newfd, send, sizeof(sLoginInfo));
-			if(send->type == LINK_NO)
+			if(send->type == LINK_OK)
 				return ;
 			else{
 				write(dest_fd, send, sizeof(sLoginInfo));
@@ -302,6 +302,7 @@ void trans_file(sLoginInfo *send, int32 newfd)
 {
 	int32 dest_fd = get_sockfd(send->user);
 
+	int32 subnet = diff_subnet(send, newfd);
 	if(subnet)
 	{
 		write(newfd, send, sizeof(sLoginInfo));
@@ -323,6 +324,27 @@ void trans_file(sLoginInfo *send, int32 newfd)
 
 }
 
+void select_all_chat(sLoginInfo *send, int32 newfd)
+{
+	int32 count;
+	for(count=0; count<MAX_USER; count++)
+	{
+		if((clients[count].online == IS_ONLINE) && (clients[count].send_flag == SEND_ON))
+		{
+			write(clients[count].sockfd, &send->msg, sizeof(sLoginInfo));
+		}
+	}
+}
+
+void get_send_flag(sLoginInfo *send, int32 newfd)
+{
+	int32 count;
+	for(count = 0; count < MAX_USER; count++)
+	{
+		if((clients[count].online == IS_ONLINE) && (strcmp(send->user, clients[count].user_name) == OK))
+			clients[count].send_flag = SEND_ON;//group send 1
+	}
+}
 
 void pri_err(int8 *msg)
 {

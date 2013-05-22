@@ -7,6 +7,7 @@
 #include<sys/stat.h>
 #include<pthread.h>
 #include<time.h>
+#include<dirent.h>
 
 #define ERR			-1
 #define SOCKET_NULL	0
@@ -59,7 +60,8 @@ void get_online_user(sLoginInfo *send, int32 newfd);
 void private_chat(sLoginInfo *send, int32 newfd);
 void public_chat(sLoginInfo *send, int32 newfd);
 void trans_file(sLoginInfo *send, int32 newfd);
-
+void get_send_flag(sLoginInfo *send, int32 newfd);
+void select_all_chat(sLoginInfo *send, int32 newfd);
 
 client_info clients[MAX_USER];
 
