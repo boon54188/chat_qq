@@ -27,7 +27,7 @@ void down_file(sLoginInfo *send, int32 newfd)
 
 	memset(send->file.buff, 0, sizeof(send->file.buff));
 
-	while((nread = read(fd, send->file.buff, sizoef(send->file.buff))) > 0)
+	while((nread = read(fd, send->file.buff, sizeof(send->file.buff))) > 0)
 	{
 		usleep(500);// wait 0.5 ms
 		write(newfd, &send->file.buff, nread);

@@ -12,6 +12,7 @@
 #define PORT			12345
 #define USER_INFO_SIZE	25
 #define BUF_SIZE		512
+#define FILE_NAME_SIZE	50
 
 
 #define	USER_REGISTER	1		//用户注册
@@ -46,17 +47,26 @@ enum user_login {
 	USER_LOGIN_PASSWD_ERROR			//登录密码错误
 };
 
+struct _file_info{
+	int8 statu;
+	int8 pwd[FILE_NAME_SIZE];
+	int8 buff[BUF_SIZE];
+	int32 len;
+};
+
+
+
 typedef struct login_info{
 	int8 user[USER_INFO_SIZE];		//用户名
 	union {
 		int8 passwd[USER_INFO_SIZE];		//用户密码 
 		int8 msg[BUF_SIZE];
+		struct _file_info file;
 	};
 	u_int16 port;
 	u_int32 recv_ip;
 	int32 type;								//类型（注册/登录）
 	int32 srnm;
 }sLoginInfo;
-
 
 #endif
