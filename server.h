@@ -8,6 +8,8 @@
 #include<pthread.h>
 #include<time.h>
 #include<dirent.h>
+#include<unistd.h>
+#include<errno.h>
 
 #define ERR			-1
 #define SOCKET_NULL	0
@@ -51,6 +53,9 @@ typedef struct function{
 void pri_err(int8 *msg);
 void accept_client(int32 sockfd);
 void *pthread_func(void *arg);
+
+ssize_t readn(int32 fd, void *buf, size_t count);
+ssize_t writen(int32 fd, const void *buf, size_t count);
 
 void analyze_type(sLoginInfo *send, int32 newfd);
 void register_user(sLoginInfo *send, int32 newfd);

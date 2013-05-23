@@ -89,7 +89,7 @@ void *pthread_func(void *arg)
 	
 	while(1)
 	{
-		nread = read(newfd, &send, sizeof(send));
+		nread = readn(newfd, &send, sizeof(send));
 		if(nread <= 0)
 		{
 			DEBUG("recv msg is empty\n");
@@ -154,7 +154,7 @@ void register_user(sLoginInfo *send, int32 newfd)
 	if(user_login_flag == REGIST_EXITED)
 	{
 		send->type = REGIST_EXITED; //type 51
-		write(newfd, send,sizeof(sLoginInfo));
+		writen(newfd, send,sizeof(sLoginInfo));
 	}else{
 		sprintf(all_buf, "%s:%s",send->user,send->passwd);
 		nwrite = write(fd, all_buf,strlen(all_buf)+1);
@@ -162,10 +162,10 @@ void register_user(sLoginInfo *send, int32 newfd)
 		if(nwrite != 0 && enter_write != 0)
 		{
 			send->type = REGIST_SUCCESS;//type 52
-			write(newfd, send, sizeof(sLoginInfo));
+			writen(newfd, send, sizeof(sLoginInfo));
 		}else{
 			send->type = REGIST_FAILED;//type 50
-			write(newfd, send, sizeof(sLoginInfo));
+			writen(newfd, send, sizeof(sLoginInfo));
 		}
 	}
 	pthread_mutex_unlock(&g_mutex);
@@ -218,7 +218,7 @@ void check_login(sLoginInfo *send, int32 newfd)
 		}
 		memset(read_buf, 0,sizeof(read_buf));
 	}
-	write(newfd, send, sizeof(sLoginInfo));
+	writen(newfd, send, sizeof(sLoginInfo));
 	get_online_user(send,newfd );
 	close(fd);
 }
@@ -237,14 +237,14 @@ void get_online_user(sLoginInfo *send, int32 newfd)
 			sprintf(user_buf, "(user):%s\t", clients[count].user_name);
 			send->srnm = clients[count].online;
 			memcpy(send->user, clients[count].user_name, USER_INFO_SIZE);
-			write(newfd, send, sizeof(sLoginInfo));
+			writen(newfd, send, sizeof(sLoginInfo));
 			//strcat(user_buf,buf);
 		}
 	}
 	if(strcmp(user_buf,"") == OK)
 	{
 		memcpy(send->user, no_user_online,sizeof(no_user_online));
-		write(newfd, send, sizeof(sLoginInfo));
+		writen(newfd, send, sizeof(sLoginInfo));
 	}
 	//else
 	//	write(newfd, user_buf, strlen(user_buf)+ 1);
@@ -262,25 +262,25 @@ void private_chat(sLoginInfo *send, int32 newfd)
 	if(dest_fd == NO_NAME)//target fd 0
 	{
 		memcpy(send->msg, no_user_online, sizeof(no_user_online));
-		write(newfd, send, sizeof(sLoginInfo));
+		writen(newfd, send, sizeof(sLoginInfo));
 
 	}else{
 		if(subnet /* case ?:&& link ok*/)
 		{
-			write(newfd, send, sizeof(sLoginInfo));
-			/*case ?:read link ok*/
+			writen(newfd, send, sizeof(sLoginInfo));
+			/*case ?:readn link ok*/
 			/*ansewer ?*/
-			read(newfd, send, sizeof(sLoginInfo));
+			readn(newfd, send, sizeof(sLoginInfo));
 			if(send->type == LINK_OK)
 				return ;
 			else{
-				write(dest_fd, send, sizeof(sLoginInfo));
+				writen(dest_fd, send, sizeof(sLoginInfo));
 			}
 	
 		}else{
 				//format_buf(dest,send->msg, newfd);
 				//write(dest_fd, dest, strlen(dest)+1);//error newfd
-				write(dest_fd, send, sizeof(sLoginInfo));
+				writen(dest_fd, send, sizeof(sLoginInfo));
 		}
 	}
 }
@@ -293,7 +293,7 @@ void public_chat(sLoginInfo *send, int32 newfd)
 		if(clients[count].sockfd == SOCKET_NULL)
 			continue;
 		else
-			write(clients[count].sockfd, send->msg, BUF_SIZE);
+			writen(clients[count].sockfd, send->msg, BUF_SIZE);
 	}
 	
 }
@@ -305,9 +305,9 @@ void trans_file(sLoginInfo *send, int32 newfd)
 	int32 subnet = diff_subnet(send, newfd);
 	if(subnet)
 	{
-		write(newfd, send, sizeof(sLoginInfo));
+		writen(newfd, send, sizeof(sLoginInfo));
 		/*	?	*/
-		read(newfd, send, sizeof(sLoginInfo));
+		readn(newfd, send, sizeof(sLoginInfo));
 		if(send->type == LINK_OK)
 			return ;
 		else{
@@ -331,7 +331,7 @@ void select_all_chat(sLoginInfo *send, int32 newfd)
 	{
 		if((clients[count].online == IS_ONLINE) && (clients[count].send_flag == SEND_ON))
 		{
-			write(clients[count].sockfd, &send->msg, sizeof(sLoginInfo));
+			writen(clients[count].sockfd, &send->msg, sizeof(sLoginInfo));
 		}
 	}
 }
@@ -344,6 +344,49 @@ void get_send_flag(sLoginInfo *send, int32 newfd)
 		if((clients[count].online == IS_ONLINE) && (strcmp(send->user, clients[count].user_name) == OK))
 			clients[count].send_flag = SEND_ON;//group send 1
 	}
+}
+
+ssize_t readn(int32 fd, void *buf, size_t count)
+{
+	ssize_t nleft;
+	ssize_t nread;
+	int8	*ptr;
+
+	ptr = buf;
+	nleft = count;
+	while(nleft > 0){
+		if((nread = read(fd, ptr, nleft)) < 0){
+			if(errno == EINTR)
+				nread = 0;		//again
+			else
+				return (-1);
+		}else if(nread == 0)
+			break;				//eof
+		nleft -= nread;
+		ptr += nread;
+	}
+	return (count - nleft);
+}
+
+ssize_t writen(int32 fd, const void *buf, size_t count)
+{
+	size_t nleft;
+	size_t nwrite;
+	const int8 *ptr;
+
+	ptr = buf;
+	nleft = count;
+	while(nleft > 0){
+		if((nwrite = write(fd, ptr, nleft)) <= 0){
+			if(errno == EINTR)
+				nwrite = 0;		//again
+			else
+				return (-1);		//error
+		}
+		nleft -= nwrite;
+		ptr += nwrite;
+	}
+	return count;
 }
 
 void pri_err(int8 *msg)
