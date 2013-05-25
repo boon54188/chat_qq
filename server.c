@@ -1,9 +1,9 @@
 #include "server.h"
 
 
-int32 main(void)
+int main(void)
 {
-	int32 sockfd;
+	int sockfd;
 	struct sockaddr_in serv_addr;
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == ERR)
 		pri_err("socket");
@@ -14,8 +14,8 @@ int32 main(void)
 	//inet_pton(AF_INET, IP, &serv_addr.sin_addr);
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	//端口重用
-	int32 on = 1;
+	//port reuse
+	int on = 1;
 	if((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) == ERR)
 		pri_err("setsockopt");
 	if((bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) == ERR)
@@ -30,9 +30,9 @@ int32 main(void)
 	return 0;
 }
 
-void accept_client(int32 sockfd)
+void accept_client(int sockfd)
 {
-	int32 newfd, count = 0;
+	int newfd, count = 0;
 	struct sockaddr_in client_addr;
 	sLoginInfo *send;
 	socklen_t len = sizeof(struct sockaddr_in);
@@ -64,9 +64,9 @@ void accept_client(int32 sockfd)
 	close(newfd);
 }
 
-void client_exit(sLoginInfo *send, int32 exit_sockfd)
+void client_exit(sLoginInfo *send, int exit_sockfd)
 {
-	int32 count_fd;
+	int count_fd;
 	for(count_fd = 0; count_fd < MAX_USER; count_fd++)
 	{
 		if(clients[count_fd].sockfd == exit_sockfd)
@@ -81,9 +81,9 @@ void client_exit(sLoginInfo *send, int32 exit_sockfd)
 
 void *pthread_func(void *arg)
 {
-	int32 newfd = *((int32 *)arg);
+	int newfd = *((int *)arg);
 	int8 buf[BUF_SIZE] = {0};
-	int32 nread = 0;
+	int nread = 0;
 	sLoginInfo send, *p_info;
 	p_info = &send;
 	
@@ -102,9 +102,9 @@ void *pthread_func(void *arg)
 	client_exit(p_info, newfd);
 }
 
-void analyze_type(sLoginInfo *send, int32 newfd)
+void analyze_type(sLoginInfo *send, int newfd)
 {
-	int32 count;
+	int count;
 	for(count = 0; count < pair[count].flag != 0;count++)
 	{
 		if(send->type == pair[count].flag)
@@ -115,15 +115,15 @@ void analyze_type(sLoginInfo *send, int32 newfd)
 	}
 }
 
-void register_user(sLoginInfo *send, int32 newfd)
+void register_user(sLoginInfo *send, int newfd)
 {
 	pthread_mutex_lock(&g_mutex);
 	int8 *file[3];
 	int8 read_buf[BUF_SIZE] = {0};
 	int8 all_buf[BUF_SIZE] = {0};
-	int32 i;
-	int32 fd, nwrite, enter_write;
-	int32 user_login_flag = 0;
+	int i;
+	int fd, nwrite, enter_write;
+	int user_login_flag = 0;
 	off_t off_len = 0;
 
 	if((fd = open(FILENAME,O_CREAT|O_RDWR|O_APPEND,0644)) == ERR)
@@ -172,14 +172,14 @@ void register_user(sLoginInfo *send, int32 newfd)
 	close(fd);
 }
 
-void check_login(sLoginInfo *send, int32 newfd)
+void check_login(sLoginInfo *send, int newfd)
 {
 	int8 *file[3];
 	int8 read_buf[BUF_SIZE] = {0};
 	int8 all_buf[BUF_SIZE];
-	int32 i;
-	int32 fd, nwrite, enter_write;
-	int32 user_login_flag = 0;
+	int i;
+	int fd, nwrite, enter_write;
+	int user_login_flag = 0;
 	off_t off_len = 0;
 
 	if((fd = open(FILENAME, O_RDONLY,0644)) == ERR)
@@ -224,9 +224,9 @@ void check_login(sLoginInfo *send, int32 newfd)
 }
 
 /**/
-void get_online_user(sLoginInfo *send, int32 newfd)
+void get_online_user(sLoginInfo *send, int newfd)
 {
-	int32 count;
+	int count;
 	int8 buf[BUF_SIZE] = {0};
 	int8 user_buf[BUF_SIZE] = {0};
 	int8 no_user_online[] = {"on user online, only you!"};
@@ -250,11 +250,11 @@ void get_online_user(sLoginInfo *send, int32 newfd)
 	//	write(newfd, user_buf, strlen(user_buf)+ 1);
 }
 
-void private_chat(sLoginInfo *send, int32 newfd)
+void private_chat(sLoginInfo *send, int newfd)
 {
 	int8 dest[BUF_SIZE] = {0};
 	int8 no_user_online[] = {"user on online! or no user\n"};
-	int32 dest_fd;
+	int dest_fd;
 	int32 subnet;
 	subnet = diff_subnet(send, newfd);
 
@@ -285,9 +285,9 @@ void private_chat(sLoginInfo *send, int32 newfd)
 	}
 }
 
-void public_chat(sLoginInfo *send, int32 newfd)
+void public_chat(sLoginInfo *send, int newfd)
 {
-	int32 count;
+	int count;
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if(clients[count].sockfd == SOCKET_NULL)
@@ -298,9 +298,9 @@ void public_chat(sLoginInfo *send, int32 newfd)
 	
 }
 
-void trans_file(sLoginInfo *send, int32 newfd)
+void trans_file(sLoginInfo *send, int newfd)
 {
-	int32 dest_fd = get_sockfd(send->user);
+	int dest_fd = get_sockfd(send->user);
 
 	int32 subnet = diff_subnet(send, newfd);
 	if(subnet)
@@ -324,9 +324,9 @@ void trans_file(sLoginInfo *send, int32 newfd)
 
 }
 
-void select_all_chat(sLoginInfo *send, int32 newfd)
+void select_all_chat(sLoginInfo *send, int newfd)
 {
-	int32 count;
+	int count;
 	for(count=0; count<MAX_USER; count++)
 	{
 		if((clients[count].online == IS_ONLINE) && (clients[count].send_flag == SEND_ON))
@@ -336,9 +336,9 @@ void select_all_chat(sLoginInfo *send, int32 newfd)
 	}
 }
 
-void get_send_flag(sLoginInfo *send, int32 newfd)
+void get_send_flag(sLoginInfo *send, int newfd)
 {
-	int32 count;
+	int count;
 	for(count = 0; count < MAX_USER; count++)
 	{
 		if((clients[count].online == IS_ONLINE) && (strcmp(send->user, clients[count].user_name) == OK))
@@ -346,7 +346,49 @@ void get_send_flag(sLoginInfo *send, int32 newfd)
 	}
 }
 
-ssize_t readn(int32 fd, void *buf, size_t count)
+void *pthread_udp(void *arg)
+{
+	int sockfd = *(int *)arg;
+	struct sockaddr_in recv_addr;
+	struct udp_list *current;
+	struct udp_list *current_user;
+	struct udp_list *head = NULL;
+	sLoginInfo msg;
+	sLoginInfo return_msg;
+
+	struct epoll_event ev;
+	struct epoll_event events[MAX_USER];
+	int epfd, nfds, i;
+	pthread_t	thread;
+
+	epfd = epoll_create(MAX_USER);
+	socklen_t len = sizeof(struct sockaddr_in);
+	ev.events = EPOLLIN;
+	ev.data.fd = sockfd;
+
+	if(epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &ev) < 0)
+		pri_err("epoll_ctl");
+
+	while(1)
+	{
+		nfds = epoll_wait(epfd, events, MAX_USER, 0);//0  immediate
+			if(nfds == -1)
+				pri_err("epoll_wait");
+		for(i = 0; i < nfds; ++i)
+		{
+			if(events[i].data.fd == sockfd)
+			{
+				if(pthread_create(&thread, NULL, ,(void *)&events[i].data.fd))
+					pri_err("pthread_udp_create");
+			}
+		}
+
+	}
+	close(sockfd);
+
+}
+
+ssize_t readn(int fd, void *buf, size_t count)
 {
 	ssize_t nleft;
 	ssize_t nread;
@@ -368,7 +410,7 @@ ssize_t readn(int32 fd, void *buf, size_t count)
 	return (count - nleft);
 }
 
-ssize_t writen(int32 fd, const void *buf, size_t count)
+ssize_t writen(int fd, const void *buf, size_t count)
 {
 	size_t nleft;
 	size_t nwrite;

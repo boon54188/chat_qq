@@ -38,7 +38,7 @@ typedef struct info{
 	u_int16 recv_port;
 	u_int32 recv_ip;
 	pthread_t tid;
-	int32 sockfd;
+	int sockfd;
 	int32 online;
 	int32 send_flag;
 }client_info;
@@ -51,22 +51,22 @@ typedef struct function{
 }flag_pairing;
 
 void pri_err(int8 *msg);
-void accept_client(int32 sockfd);
+void accept_client(int sockfd);
 void *pthread_func(void *arg);
 
-ssize_t readn(int32 fd, void *buf, size_t count);
-ssize_t writen(int32 fd, const void *buf, size_t count);
+ssize_t readn(int fd, void *buf, size_t count);
+ssize_t writen(int fd, const void *buf, size_t count);
 
-void analyze_type(sLoginInfo *send, int32 newfd);
-void register_user(sLoginInfo *send, int32 newfd);
-void check_login(sLoginInfo *send, int32 newfd);
-void client_exit(sLoginInfo *send, int32 exit_sockfd);
-void get_online_user(sLoginInfo *send, int32 newfd);
-void private_chat(sLoginInfo *send, int32 newfd);
-void public_chat(sLoginInfo *send, int32 newfd);
-void trans_file(sLoginInfo *send, int32 newfd);
-void get_send_flag(sLoginInfo *send, int32 newfd);
-void select_all_chat(sLoginInfo *send, int32 newfd);
+void analyze_type(sLoginInfo *send, int newfd);
+void register_user(sLoginInfo *send, int newfd);
+void check_login(sLoginInfo *send, int newfd);
+void client_exit(sLoginInfo *send, int exit_sockfd);
+void get_online_user(sLoginInfo *send, int newfd);
+void private_chat(sLoginInfo *send, int newfd);
+void public_chat(sLoginInfo *send, int newfd);
+void trans_file(sLoginInfo *send, int newfd);
+void get_send_flag(sLoginInfo *send, int newfd);
+void select_all_chat(sLoginInfo *send, int newfd);
 
 client_info clients[MAX_USER];
 
