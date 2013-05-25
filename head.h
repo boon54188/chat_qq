@@ -23,10 +23,16 @@
 #define SEND_FILE		6		//发送文件
 #define GROUP_JOIN		8		//加入群 flag=1
 
-#define USER_QUIT		9		//用户退出
-#define	USER_ONLINE		10		//在线用户
-#define HEART_DATA		11		//heart
-#define USER_LINE		12		//用户上线
+#define USER_QUIT		11		//用户退出
+#define	USER_ONLINE		12		//在线用户
+#define HEART_DATA		13		//heart
+#define USER_LINE		14		//用户上线
+#define CHAT_REQ		15
+#define CHAT_NAT		17
+#define CHAT_INET		16
+#define CHAT_AGREE		18
+#define CHAT_RETURN		19
+
 
 #define LINK_FLAG		20		//p2p连接成功
 

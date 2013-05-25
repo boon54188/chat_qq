@@ -10,6 +10,7 @@
 #include<dirent.h>
 #include<unistd.h>
 #include<errno.h>
+#include<sys/epoll.h>
 
 #define ERR			-1
 #define SOCKET_NULL	0
@@ -43,6 +44,13 @@ typedef struct info{
 	int32 send_flag;
 }client_info;
 
+typedef struct udp_list{
+	int8 login_name[USER_INFO_SIZE];
+	u_int16 user_udp_port;
+	u_int32 user_udp_ip;
+	int srnm;
+	struct udp_list *next;
+}udp_link;
 
 
 typedef struct function{
@@ -68,6 +76,13 @@ void trans_file(sLoginInfo *send, int newfd);
 void get_send_flag(sLoginInfo *send, int newfd);
 void select_all_chat(sLoginInfo *send, int newfd);
 
+void *pthread_udp(void *arg);
+void *udp_handle(void *arg);
+udp_link *add_list(udp_link *head, sLoginInfo *send, struct sockaddr_in *recv_addr);
+udp_link *check_list(udp_link *head, int8 *p);
+udp_link *find_user(udp_link *head, struct sockaddr_in *recv_addr);
+void traverse_list(udp_link *head, struct sockaddr_in *recv_addr, int sockfd, sLoginInfo *send);
+
 client_info clients[MAX_USER];
 
 static pthread_mutex_t  g_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -83,6 +98,7 @@ static flag_pairing pair[]={
 	{GROUP_CHAT,	select_all_chat},
 	{0,NULL}
 };
+
 
 
 

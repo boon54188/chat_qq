@@ -57,7 +57,7 @@ void accept_client(int sockfd)
 				break;
 			}
 		}
-		if((pthread_create(&clients[count].tid, NULL, pthread_func,&clients[count].sockfd)) == ERR)
+		if((pthread_create(&clients[count].tid, NULL, pthread_func,(void *)clients[count].sockfd)) == ERR)
 			pri_err("pthread_create");
 	}
 	close(sockfd);
@@ -81,7 +81,7 @@ void client_exit(sLoginInfo *send, int exit_sockfd)
 
 void *pthread_func(void *arg)
 {
-	int newfd = *((int *)arg);
+	int newfd = (int)arg;
 	int8 buf[BUF_SIZE] = {0};
 	int nread = 0;
 	sLoginInfo send, *p_info;
@@ -349,12 +349,6 @@ void get_send_flag(sLoginInfo *send, int newfd)
 void *pthread_udp(void *arg)
 {
 	int sockfd = *(int *)arg;
-	struct sockaddr_in recv_addr;
-	struct udp_list *current;
-	struct udp_list *current_user;
-	struct udp_list *head = NULL;
-	sLoginInfo msg;
-	sLoginInfo return_msg;
 
 	struct epoll_event ev;
 	struct epoll_event events[MAX_USER];
@@ -378,7 +372,7 @@ void *pthread_udp(void *arg)
 		{
 			if(events[i].data.fd == sockfd)
 			{
-				if(pthread_create(&thread, NULL, ,(void *)&events[i].data.fd))
+				if(pthread_create(&thread, NULL, udp_handle ,(void *)&events[i].data.fd))
 					pri_err("pthread_udp_create");
 			}
 		}
