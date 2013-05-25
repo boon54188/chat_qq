@@ -37,15 +37,17 @@ void down_file(sLoginInfo *send, int32 newfd)
 
 void upload_file(sLoginInfo *send, int32 newfd)
 {
-	int32 fd, nread = 0;
+	int32 fd, nwrite = 0;
 
 	if((fd = open(send->file.pwd, O_CREAT|O_WRONLY|O_TRUNC, 0644)) == ERR)
 		pri_err("open upload file");
 
 	memset(send->file.buff, 0, sizeof(send->file.buff));
 
-	while((nread = readn(newfd, send->file.buff, sizeof(send->file.buff))) > 0)
-		write(fd, &send->file.buff, nread);
+	nwrite = writen(fd, &send->file.buff, sizeof(send->file.buff));//len？
+	if(nwrite < 0)
+		pri_err("writen");
+
 
 	close(fd);
 }

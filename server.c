@@ -3,8 +3,9 @@
 
 int main(void)
 {
-	int sockfd;
-	struct sockaddr_in serv_addr;
+	int sockfd, udp_sock;
+	struct sockaddr_in serv_addr, udp_addr;
+	pthread_t udp_tid;
 	if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == ERR)
 		pri_err("socket");
 
@@ -13,6 +14,18 @@ int main(void)
 	serv_addr.sin_port = htons(PORT);
 	//inet_pton(AF_INET, IP, &serv_addr.sin_addr);
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	//udp
+	if((udp_sock = socket(AF_INET, SOCK_DGRAM, 0)) == ERR)
+		pri_err("udp_sock");
+	bzero(&udp_addr,sizeof(udp_addr));
+	udp_addr.sin_family = AF_INET;
+	udp_addr.sin_port = htons(UDP_PORT);
+	udp_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	if(bind(udp_sock, (struct sockaddr *)&udp_addr, sizeof(udp_addr)) == ERR)
+		pri_err("udp bind");
+	if((pthread_create(&udp_tid, NULL, pthread_udp,(void *)&udp_sock)) == ERR);
+		pri_err("create udp thread");
 
 	//port reuse
 	int on = 1;

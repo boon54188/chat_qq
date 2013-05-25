@@ -10,6 +10,7 @@
 
 #define IP				"10.5.22.10"
 #define PORT			12345
+#define UDP_PORT		5000
 #define USER_INFO_SIZE	25
 #define BUF_SIZE		512
 #define FILE_NAME_SIZE	50
